@@ -5,6 +5,7 @@ from django.contrib.auth.views import LoginView
 from django.conf import settings
 from .forms import NewUserForm
 from django.contrib import messages
+from django.http import HttpResponseRedirect
 
 @login_required
 def dashboard(request):
@@ -25,10 +26,10 @@ class CustomLoginView(LoginView):
 def login(request):
     if request.method == 'POST':
         username = request.POST['username']
-        password = request.POST['password']
+        password = request.POST['password1']
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
+            login(request)
             next_url = request.POST.get('next', '/dashboard/')
             return redirect(next_url)
         else:
@@ -38,13 +39,22 @@ def login(request):
         return render(request, 'login.html')
     
 def register_request(request):
-	if request.method == "POST":
-		form = NewUserForm(request.POST)
-		if form.is_valid():
-			user = form.save()
-			login(request, user)
-			messages.success(request, "Registration successful." )
-			return redirect(request.POST.get('next', '/dashboard/'))
-		messages.error(request, "Unsuccessful registration. Invalid information.")
-	form = NewUserForm()
-	return render (request=request, template_name="register.html", context={"register_form":form})
+    if request.method == "POST":
+        form = NewUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, "Registration successful.")
+            return HttpResponseRedirect("/login/")
+        else:
+            password1 = form.data['password1']
+            password2 = form.data['password2']
+            email = form.data['email']
+            for msg in form.errors.as_data():
+                if msg == 'email':
+                    messages.error(request, f"Declared {email} is not valid")
+                if msg == 'password2' and password1 == password2:
+                    messages.error(request, f"Selected password is not strong enough")
+                elif msg == 'password2' and password1 != password2:
+                    messages.error(request, f"Password and Confirmation Password do not match")
+    form = NewUserForm()
+    return render(request=request, template_name="register.html", context={"register_form": form})
