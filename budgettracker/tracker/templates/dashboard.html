@@ -1,5 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Hello {{ user.username }}!</h1>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link active" href="#">Dashboard</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">Expenses</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">Income</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">Categories</a>
+    </li>
+  </ul>
+</nav>
+
+<!-- Main content -->
+<div class="main-content">
+  <h1>Dashboard</h1>
+  <!-- Your dashboard content goes here -->
+</div>
+
+{% endblock %}
+
+{% block styles %}
+<style>
+.sidebar {
+  background-color: #f1f1f1;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200px;
+}
+
+.main-content {
+  margin-left: 200px; /* Set the margin to match the width of the sidebar */
+}
+</style>
 {% endblock %}
