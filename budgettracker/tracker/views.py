@@ -6,6 +6,10 @@ from django.conf import settings
 from .forms import NewUserForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from .models import Income
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 
 @login_required
 def dashboard(request):
@@ -58,3 +62,42 @@ def register_request(request):
                     messages.error(request, f"Password and Confirmation Password do not match")
     form = NewUserForm()
     return render(request=request, template_name="register.html", context={"register_form": form})
+
+
+""" Income Table """
+
+# Displays a list of all the income objects belonging to the currently logged-in user.
+class IncomeListView(LoginRequiredMixin, ListView):
+    model = Income
+    template_name = 'income_list.html'
+    context_object_name = 'income_list'
+
+    def get_queryset(self):
+        return Income.objects.filter(user=self.request.user)
+
+# Provides a form to create a new income object and saves it to the database.
+class IncomeCreateView(LoginRequiredMixin, CreateView):
+    model = Income
+    fields = ['amount', 'date', 'category', 'description']
+    success_url = reverse_lazy('income_list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+#Provides a form to update an existing income object and updates it in the database.
+class IncomeUpdateView(LoginRequiredMixin, UpdateView):
+    model = Income
+    fields = ['amount', 'date', 'category', 'description']
+    success_url = reverse_lazy('income_list')
+
+    def get_queryset(self):
+        return Income.objects.filter(user=self.request.user)
+
+# Deletes an existing income object from the database.
+class IncomeDeleteView(LoginRequiredMixin, DeleteView):
+    model = Income
+    success_url = reverse_lazy('income_list')
+
+    def get_queryset(self):
+        return Income.objects.filter(user=self.request.user)
